@@ -3,7 +3,7 @@ name: Import ARKI project
 on:
   push:
     branches: [main]
-    paths: [ARKI_Project_v1.8_git.bundle]
+    paths: [ARKI_Project_v1.9_git.bundle]
   workflow_dispatch:
 
 permissions:
@@ -46,7 +46,7 @@ jobs:
         run: git push origin HEAD:main
       - name: Report import
         run: |
-          echo '## ARKI 1.8 imported' >> "$GITHUB_STEP_SUMMARY"
-          echo '193 original source files verified; build and Node tests passed.' >> "$GITHUB_STEP_SUMMARY"
+          echo '## ARKI 1.9 imported' >> "$GITHUB_STEP_SUMMARY"
+          echo '194 original source files verified; build and Node tests passed.' >> "$GITHUB_STEP_SUMMARY"
           echo "Commit: $(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
           echo 'Source import only. No site deployment, live retailer feeds or household-data sync was enabled.' >> "$GITHUB_STEP_SUMMARY"
