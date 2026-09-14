@@ -14,11 +14,11 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-BUNDLE = Path('ARKI_Project_v1.7_git.bundle')
-BUNDLE_SHA256 = 'ada39d2d62ab33dbab0e8d3eac79c46ea6413027244010b2dc71c1ef529d0fca'
-SOURCE_COMMIT = '4b8d7b0a1d9a214158f69ae0088ebac8cf2f1d61'
+BUNDLE = Path('ARKI_Project_v1.8_git.bundle')
+BUNDLE_SHA256 = 'c069d4042dcb42dcde1739b907459c4223cd6c1bdceed229ffd516c8b9fe0c34'
+SOURCE_COMMIT = 'd0a8652a261881c4a5e55f89e618309d2f005944'
 SOURCE_REF = 'refs/remotes/arki-import/main'
-SOURCE_COUNT = 188
+SOURCE_COUNT = 193
 
 
 def git(*args: str) -> str:
@@ -35,7 +35,7 @@ def require(condition: bool, message: str) -> None:
 
 
 def source_tree() -> dict[str, tuple[str, str]]:
-    raw = subprocess.check_output(['git', 'ls-tree', '-rz', SOURCE_COMMIT])
+    raw = subprocess.check_output(['git', 'ls-tree', '-rz', '-r', SOURCE_COMMIT])
     result = {}
     for entry in raw.split(b'\0'):
         if not entry:
@@ -87,6 +87,7 @@ def finish() -> None:
     require(git('rev-parse', 'MERGE_HEAD') == SOURCE_COMMIT, 'Expected import merge is not active')
     verify_imported_files()
     report = {
+        'version': '1.8.0',
         'source_commit': SOURCE_COMMIT,
         'bundle_sha256': BUNDLE_SHA256,
         'source_files': SOURCE_COUNT,
@@ -94,14 +95,14 @@ def finish() -> None:
         'source_blobs_match': True,
         'checks': ['npm test', 'npm run test:web'],
         'check_result': 'passed before commit',
-        'note': 'Source import only; no hosting deployment or family-data synchronization.'
+        'note': 'Source import only; no hosting deployment, live retailer feeds or household-data synchronization.'
     }
     Path('docs/GITHUB_IMPORT.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
-    Path('README.md').write_text('''# ARKI — Nordic 1.7
+    Path('README.md').write_text('''# ARKI — Guided Nordic 1.8
 
-**Основной проект импортирован.** Сохранены все 188 файлов подготовленного
-снимка и его исходный коммит `4b8d7b0a1d9a214158f69ae0088ebac8cf2f1d61`.
-Импорт прошёл проверки `npm test` и `npm run test:web` перед коммитом.
+**Основной проект импортирован.** Сохранены все 193 файла проверенного снимка
+и его исходный коммит `d0a8652a261881c4a5e55f89e618309d2f005944`.
+Перед импортом прошли `npm test` и `npm run test:web`.
 
 ## Быстрый запуск
 
@@ -116,32 +117,39 @@ npm run demo
 
 Откройте `http://127.0.0.1:8080` на том же компьютере.
 
+## ARKI 1.8
+
+Первый запуск теперь ведёт пользователя по связному сценарию:
+**профиль → магазины → дни готовки → бюджет → предпочтения → кухня → pantry**.
+После завершения создаётся недельный план на выбранные дни, магазины попадают
+в сравнение, а pantry учитывается в закупке.
+
 ## Где продолжать разработку
 
-- Актуальный интерфейс, логика и стили: `app/web/src/`.
+- Интерфейс и сценарий: `app/web/src/js/app.js`.
+- Магазины, карта и GPS: `app/web/src/js/nearby.js`.
+- Цены/акции/Real Cost: `app/web/src/js/pricing.js`, `commerce-ui.js`.
+- Планировщик: `app/web/src/js/planner.js`.
+- Nordic/onboarding стили: `app/web/src/css/`.
 - Изображения: `app/web/assets/`.
-- Сборка: `app/web/build.mjs`, шаблон: `app/web/index.html`.
 - Сохранённый закрытый серверный пилот: `app/pilot/`.
-- Правила разработки: [AGENTS.md](AGENTS.md).
 - Полная инструкция: [README_RU.md](README_RU.md).
+- Проверка: [docs/VERIFICATION_RU.md](docs/VERIFICATION_RU.md).
 - Отчёт импорта: [docs/GITHUB_IMPORT.json](docs/GITHUB_IMPORT.json).
 
-HTML является результатом сборки, не единственным исходником проекта.
+HTML в `app/web/dist/` является результатом сборки, а не единственным исходником.
 
-## Текущие ограничения
+## Ограничения
 
-Публикация сайта не выполнялась. Nordic-клиент сохраняет данные в браузере;
-его семейная серверная синхронизация ещё не подключена. Закрытый пилот
-работает отдельно и допускает только вымышленные тестовые данные.
-Автоматические цены магазинов и подтверждённое партнёрство с K-ryhmä
-отсутствуют. Примерные цены отделены от личных записей пользователя.
-Не добавляйте ключи, базы, приглашения и рабочие .env-файлы в Git.
-
-Исходные отчёты и README_RU.md сохранены без правок и описывают состояние
-до отправки в GitHub. Этот README и отчёт импорта фиксируют новую отправку.
+Публикация production-сайта этим импортом не выполняется. Живые прайсы
+K-ryhmä/S-ryhmä/Lidl и подтверждённое партнёрство отсутствуют; встроенные
+цены являются демонстрационными. Nordic-клиент пока сохраняет данные локально,
+а закрытый Node/SQLite пилот остаётся отдельным synthetic-only режимом без
+автоматической семейной синхронизации. Не добавляйте ключи, базы, приглашения
+или рабочие `.env` в Git.
 ''', encoding='utf-8')
     run('git', 'add', 'README.md', 'docs/GITHUB_IMPORT.json')
-    run('git', 'commit', '-m', 'Import verified ARKI Nordic 1.7 project and preserve source history')
+    run('git', 'commit', '-m', 'Import verified ARKI Guided Nordic 1.8 project')
     print(git('rev-parse', 'HEAD'))
 
 
