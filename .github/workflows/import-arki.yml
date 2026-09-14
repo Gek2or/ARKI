@@ -1,0 +1,52 @@
+name: Import ARKI project
+
+on:
+  push:
+    branches: [main]
+    paths: [ARKI_Project_v1.7_git.bundle]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: arki-source-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Use tested Node version
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.16.0'
+      - name: Configure import author
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+      - name: Verify bundle and prepare source merge
+        run: python3 .github/scripts/import-arki.py prepare
+      - name: Test existing app and private pilot
+        working-directory: app
+        run: npm test
+      - name: Build and test Nordic client
+        working-directory: app
+        run: npm run test:web
+      - name: Verify all source files and commit
+        run: python3 .github/scripts/import-arki.py finish
+      - name: Push without rewriting history
+        run: git push origin HEAD:main
+      - name: Report import
+        run: |
+          echo '## ARKI 1.7 imported' >> "$GITHUB_STEP_SUMMARY"
+          echo '188 original source files verified; build and Node tests passed.' >> "$GITHUB_STEP_SUMMARY"
+          echo "Commit: $(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+          echo 'Source import only. No site deployment or household-data sync was enabled.' >> "$GITHUB_STEP_SUMMARY"

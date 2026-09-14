@@ -1,0 +1,42 @@
+name: ARKI checks
+
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', '.github/workflows/arki-ci.yml']
+  pull_request:
+    paths: ['app/**', '.github/workflows/arki-ci.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Check import status
+        id: source
+        run: |
+          if [ -f app/package.json ]; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo 'Project source import is still pending; application tests were not run.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Use tested Node version
+        if: steps.source.outputs.ready == 'true'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.16.0'
+      - name: Test existing app and private pilot
+        if: steps.source.outputs.ready == 'true'
+        working-directory: app
+        run: npm test
+      - name: Build and test Nordic client
+        if: steps.source.outputs.ready == 'true'
+        working-directory: app
+        run: npm run test:web
