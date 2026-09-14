@@ -14,11 +14,11 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-BUNDLE = Path('ARKI_Project_v1.8_git.bundle')
-BUNDLE_SHA256 = 'c069d4042dcb42dcde1739b907459c4223cd6c1bdceed229ffd516c8b9fe0c34'
-SOURCE_COMMIT = 'd0a8652a261881c4a5e55f89e618309d2f005944'
+BUNDLE = Path('ARKI_Project_v1.9_git.bundle')
+BUNDLE_SHA256 = '9e1525f342c2f4f980181641cf485647fb9521fd090c89d027c7808663a36fec'
+SOURCE_COMMIT = '773f2bc4ee0b3237c191a71e0503fc8f43fb6fea'
 SOURCE_REF = 'refs/remotes/arki-import/main'
-SOURCE_COUNT = 193
+SOURCE_COUNT = 194
 
 
 def git(*args: str) -> str:
@@ -87,7 +87,7 @@ def finish() -> None:
     require(git('rev-parse', 'MERGE_HEAD') == SOURCE_COMMIT, 'Expected import merge is not active')
     verify_imported_files()
     report = {
-        'version': '1.8.0',
+        'version': '1.9.0',
         'source_commit': SOURCE_COMMIT,
         'bundle_sha256': BUNDLE_SHA256,
         'source_files': SOURCE_COUNT,
@@ -98,10 +98,10 @@ def finish() -> None:
         'note': 'Source import only; no hosting deployment, live retailer feeds or household-data synchronization.'
     }
     Path('docs/GITHUB_IMPORT.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
-    Path('README.md').write_text('''# ARKI — Guided Nordic 1.8
+    Path('README.md').write_text('''# ARKI — Guided Nordic 1.9
 
-**Основной проект импортирован.** Сохранены все 193 файла проверенного снимка
-и его исходный коммит `d0a8652a261881c4a5e55f89e618309d2f005944`.
+**Основной проект импортирован.** Сохранены все 194 файла проверенного снимка
+и его исходный коммит `773f2bc4ee0b3237c191a71e0503fc8f43fb6fea`.
 Перед импортом прошли `npm test` и `npm run test:web`.
 
 ## Быстрый запуск
@@ -117,12 +117,13 @@ npm run demo
 
 Откройте `http://127.0.0.1:8080` на том же компьютере.
 
-## ARKI 1.8
+## ARKI 1.9
 
-Первый запуск теперь ведёт пользователя по связному сценарию:
+Первый запуск ведёт пользователя по сценарию:
 **профиль → магазины → дни готовки → бюджет → предпочтения → кухня → pantry**.
-После завершения создаётся недельный план на выбранные дни, магазины попадают
-в сравнение, а pantry учитывается в закупке.
+После создания недели появляется отдельный итоговый экран: блюда недели,
+корзина, выбранные магазины и текущий результат сравнения. Оттуда можно открыть
+календарь, сравнение магазинов или сразу сгенерировать другой вариант.
 
 ## Где продолжать разработку
 
@@ -130,11 +131,11 @@ npm run demo
 - Магазины, карта и GPS: `app/web/src/js/nearby.js`.
 - Цены/акции/Real Cost: `app/web/src/js/pricing.js`, `commerce-ui.js`.
 - Планировщик: `app/web/src/js/planner.js`.
-- Nordic/onboarding стили: `app/web/src/css/`.
+- Nordic/onboarding/result стили: `app/web/src/css/`.
 - Изображения: `app/web/assets/`.
 - Сохранённый закрытый серверный пилот: `app/pilot/`.
 - Полная инструкция: [README_RU.md](README_RU.md).
-- Проверка: [docs/VERIFICATION_RU.md](docs/VERIFICATION_RU.md).
+- Проверка: [docs/VERIFICATION_V1.9.md](docs/VERIFICATION_V1.9.md).
 - Отчёт импорта: [docs/GITHUB_IMPORT.json](docs/GITHUB_IMPORT.json).
 
 HTML в `app/web/dist/` является результатом сборки, а не единственным исходником.
@@ -149,7 +150,7 @@ K-ryhmä/S-ryhmä/Lidl и подтверждённое партнёрство о
 или рабочие `.env` в Git.
 ''', encoding='utf-8')
     run('git', 'add', 'README.md', 'docs/GITHUB_IMPORT.json')
-    run('git', 'commit', '-m', 'Import verified ARKI Guided Nordic 1.8 project')
+    run('git', 'commit', '-m', 'Import verified ARKI Guided Nordic 1.9 project')
     print(git('rev-parse', 'HEAD'))
 
 
