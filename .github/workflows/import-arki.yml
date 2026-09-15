@@ -3,7 +3,7 @@ name: Import ARKI project
 on:
   push:
     branches: [main]
-    paths: [ARKI_Project_v1.9_git.bundle]
+    paths: [ARKI_Project_v2.0_git.bundle]
   workflow_dispatch:
 
 permissions:
@@ -34,10 +34,10 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - name: Verify bundle and prepare source merge
         run: python3 .github/scripts/import-arki.py prepare
-      - name: Test existing app and private pilot
+      - name: Test preserved app and private pilot
         working-directory: app
         run: npm test
-      - name: Build and test Guided Nordic client
+      - name: Build and test ARKI 2.0 client
         working-directory: app
         run: npm run test:web
       - name: Verify all source files and commit
@@ -46,7 +46,7 @@ jobs:
         run: git push origin HEAD:main
       - name: Report import
         run: |
-          echo '## ARKI 1.9 imported' >> "$GITHUB_STEP_SUMMARY"
-          echo '194 original source files verified; build and Node tests passed.' >> "$GITHUB_STEP_SUMMARY"
+          echo '## ARKI 2.0 imported' >> "$GITHUB_STEP_SUMMARY"
+          echo '195 source files verified; Node and web tests passed.' >> "$GITHUB_STEP_SUMMARY"
           echo "Commit: $(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
-          echo 'Source import only. No site deployment, live retailer feeds or household-data sync was enabled.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Source import only. No production deployment, live retailer feed or household-data sync was enabled.' >> "$GITHUB_STEP_SUMMARY"
